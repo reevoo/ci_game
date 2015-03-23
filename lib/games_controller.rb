@@ -11,7 +11,7 @@ module GamesController
         #email people
         Pony.mail(
           to: config['email_addresses'],
-          from: "Jenkins <jenkins@ci>"
+          from: "Jenkins <jenkins@ci>",
           subject: "Awesomes You Just leveled up in the #{game.name} CI Game",
           body: <<-EMAIL
             Hi There,
