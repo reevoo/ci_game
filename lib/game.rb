@@ -13,12 +13,11 @@ class Game
     results.all? { |r| r == 'SUCCESS' }
   end
 
-  attr_reader :round, :name
+  attr_reader :round, :name, :host
 
   protected
 
-  attr_accessor :host
-  attr_writer :round, :name
+  attr_writer :round, :name, :host
 
   private
 
@@ -27,7 +26,7 @@ class Game
   end
 
   def builds
-    JSON.parse(open("#{host}/job/#{name}/api/json").read)['builds'].map { |b| to_build(b['number']) }.first(round)
+    JSON.parse(open("#{host}/job/#{name}/api/json").read)['builds'].first(round).map { |b| to_build(b['number']) }
   end
 
   def to_build(build_number)

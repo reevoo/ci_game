@@ -1,6 +1,6 @@
 require 'game'
+require 'game_email'
 require 'yaml'
-require 'pony'
 
 module GamesController
   extend self
@@ -8,43 +8,11 @@ module GamesController
   def run_games
     games.each do |game|
       if game.round_complete?
-        #email people
-        Pony.mail(
-          to: config['email_addresses'],
-          from: "Jenkins <jenkins@ci>",
-          subject: "Awesomes You Just leveled up in the #{game.name} CI Game",
-          body: <<-EMAIL
-            Hi There,
-
-            I'm Jenkins your friendly local CI server. I am proud to announce you
-            have just reached the giddying heights of level #{game.round} in
-            the #{game.name} CI Game.
-
-            This means that you have managed #{game.round} consecutive passing
-            builds on the #{game.name} project.
-
-            Don't believe it check it out #{config['jenkins_host']}/job/#{game.name}/
-
-            May I now humbly suggest you all order a Pizza, or whatever you want
-            to celebrate your fantastic success.
-
-            Me, I'm off to build some software.
-
-            Your Humble Servant,
-
-            Mr Jenkins
-
-            P.S. It gets quite lonely here in the server room, come and see me sometime.
-          EMAIL
-        )
+        GameEmail.new(game, config['email_addresses']).inform_of_win!
         save_game(game)
-      else
-        #do nothing the next round has not yet started
       end
     end
   end
-
-
 
   private
 
