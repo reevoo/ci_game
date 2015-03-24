@@ -1,5 +1,9 @@
 # CI Game
 
+[![Build Status](https://travis-ci.org/reevoo/ci_game.svg?branch=master)](https://travis-ci.org/reevoo/ci_game)
+[![Code Climate](https://codeclimate.com/github/reevoo/ci_game/badges/gpa.svg)](https://codeclimate.com/github/reevoo/ci_game)
+[![Test Coverage](https://codeclimate.com/github/reevoo/ci_game/badges/coverage.svg)](https://codeclimate.com/github/reevoo/ci_game)
+
 ## WTF
 
 Wants to Gameify your CI? Who doesn't?
