@@ -1,0 +1,10 @@
+language: ruby
+rvm:
+  - 2.2.0
+  - 2.1.5
+  - 2.0.0
+  - 1.9.3
+sudo: false
+addons:
+  code_climate:
+    repo_token: 9c88dad56855c8b005eab3f211edb05167ceb5225e3eb84c6b003cfbfcd3a98f
