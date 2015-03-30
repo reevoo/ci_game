@@ -11,7 +11,21 @@ describe Game do
   end
 
   let(:jobs_json) do
-    '{"builds": [ {"number":17}, {"number":15}, {"number":14}, {"number":13} ]}'
+    {}
+  end
+
+  def passing_build(number_of_passing_builds)
+    {
+      'lastSuccessfulBuild' => { 'number' => 100 },
+      'lastUnsuccessfulBuild' => { 'number' => 100 - number_of_passing_builds },
+    }.to_json
+  end
+
+  def failing_build(number_of_failing_builds)
+    {
+      'lastSuccessfulBuild' => { 'number' => 1 },
+      'lastUnsuccessfulBuild' => { 'number' => 1 + number_of_failing_builds },
+    }.to_json
   end
 
   describe '#round_complete?' do
@@ -19,11 +33,7 @@ describe Game do
       let(:round) { 1 }
 
       context 'when the build is passing' do
-        before do
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/17/api/json')
-            .and_return(double(read: '{ "result": "SUCCESS" }'))
-        end
+        let(:jobs_json) { passing_build(1) }
 
         it 'is a completed round' do
           expect(subject.round_complete?).to be_truthy
@@ -31,11 +41,7 @@ describe Game do
       end
 
       context 'when the build is failing' do
-        before do
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/17/api/json')
-            .and_return(double(read: '{ "result": "NOT PASSING" }'))
-        end
+        let(:jobs_json) { failing_build(1) }
 
         it 'is not a completed round' do
           expect(subject.round_complete?).to be_falsy
@@ -46,32 +52,16 @@ describe Game do
     context 'in the second round' do
       let(:round) { 2 }
 
-      context 'when one of the builds is passing' do
-        before do
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/17/api/json')
-            .and_return(double(read: '{ "result": "SUCCESS" }'))
-
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/15/api/json')
-            .and_return(double(read: '{ "result": "OH NOES" }'))
-        end
+      context 'when only one build passed' do
+        let(:jobs_json) { passing_build(1) }
 
         it 'is not a completed round' do
           expect(subject.round_complete?).to be_falsy
         end
       end
 
-      context 'both builds are failing' do
-        before do
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/17/api/json')
-            .and_return(double(read: '{ "result": "NOT PASSING" }'))
-
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/15/api/json')
-            .and_return(double(read: '{ "result": "ALSO BORKED" }'))
-        end
+      context 'when the last build is failing' do
+        let(:jobs_json) { failing_build(1) }
 
         it 'is not a completed round' do
           expect(subject.round_complete?).to be_falsy
@@ -79,15 +69,7 @@ describe Game do
       end
 
       context 'both builds are passing' do
-        before do
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/17/api/json')
-            .and_return(double(read: '{ "result": "SUCCESS" }'))
-
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/15/api/json')
-            .and_return(double(read: '{ "result": "SUCCESS" }'))
-        end
+        let(:jobs_json) { passing_build(2) }
 
         it 'is a completed round' do
           expect(subject.round_complete?).to be_truthy
@@ -99,19 +81,7 @@ describe Game do
       let(:round) { 4 }
 
       context '4 builds are passing' do
-        before do
-          allow(subject).to receive(:open)
-            .and_return(
-            build_double('SUCCESS'),
-            build_double('SUCCESS'),
-            build_double('SUCCESS'),
-            build_double('SUCCESS'),
-          )
-
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/api/json')
-            .and_return(double(read: jobs_json))
-        end
+        let(:jobs_json) { passing_build(4) }
 
         it 'is a completed round' do
           expect(subject.round_complete?).to be_truthy
@@ -119,27 +89,11 @@ describe Game do
       end
 
       context 'the last build failing' do
-        before do
-          allow(subject).to receive(:open)
-            .and_return(
-            build_double('SUCCESS'),
-            build_double('SUCCESS'),
-            build_double('SUCCESS'),
-            build_double('FAIL'),
-          )
-
-          allow(subject).to receive(:open)
-            .with('http://jenkins-server/job/flake-app/api/json')
-            .and_return(double(read: jobs_json))
-        end
+        let(:jobs_json) { passing_build(3) }
 
         it 'is not a completed round' do
           expect(subject.round_complete?).to be_falsy
         end
-      end
-
-      def build_double(result)
-        double(read: "{ \"result\": \"#{result}\" }")
       end
     end
   end
