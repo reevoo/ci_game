@@ -10,7 +10,7 @@ class Game
 
 
   def round_complete?
-    results.all? { |r| r == 'SUCCESS' }
+    num_successful_builds >= round
   end
 
   attr_reader :round, :name, :host
@@ -21,16 +21,21 @@ class Game
 
   private
 
-  def results
-    builds.map { |b| b['result'] }
+  def num_successful_builds
+    build_number('lastSuccessfulBuild') - build_number('lastUnsuccessfulBuild')
   end
 
-  def builds
-    JSON.parse(open("#{host}/job/#{name}/api/json").read)['builds'].first(round).map { |b| to_build(b['number']) }
+  def api_info
+    @api_info ||= JSON.parse(open("#{host}/job/#{name}/api/json").read)
   end
 
-  def to_build(build_number)
-    JSON.parse(open("#{host}/job/#{name}/#{build_number}/api/json").read)
+  # Returns 0 if the build does not exist at the given key,
+  # otherwise returns 'number'
+  def build_number(key)
+    build = api_info[key]
+    return 0 if build.nil?
+
+    build['number']
   end
 
 
