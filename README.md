@@ -25,7 +25,7 @@ email_adresses:
   - anyone@youlike.com
   - please.dont@spam.me
 ````
-* run it somewhat often `bin/ci_game` with cron or a while loop or somesuch.
+* run `bin/ci_game` somewhat often with cron or a while loop or somesuch.
 
 ##Licence
 
